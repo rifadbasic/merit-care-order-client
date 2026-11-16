@@ -136,6 +136,17 @@ export function renderSuccessModal() {
                 </p>
               </div>
 
+              <div
+                id="successAdvancePayment"
+                class="hidden rounded-xl border border-orange-200 bg-orange-50 p-4 sm:col-span-2"
+              >
+                <h3 class="mb-3 font-bold text-blue-950">
+                  Advance Payment Information
+                </h3>
+
+                <div id="successAdvancePaymentDetails" class="space-y-2 text-sm"></div>
+              </div>
+
             </div>
 
           </div>
@@ -188,6 +199,16 @@ export function renderSuccessModal() {
             <div class="mt-3 flex justify-between border-t pt-4 text-xl font-bold text-blue-950">
               <span>সর্বমোট</span>
               <span id="successTotal">৳0</span>
+            </div>
+
+            <div class="mt-3 flex justify-between border-t pt-3 font-semibold text-green-700">
+              <span>অগ্রিম পরিশোধ</span>
+              <span id="successAdvanceAmount">৳0</span>
+            </div>
+
+            <div class="mt-2 flex justify-between font-bold text-red-600">
+              <span>বকেয়া টাকা</span>
+              <span id="successDueAmount">৳0</span>
             </div>
 
           </div>
@@ -395,6 +416,43 @@ export function showSuccessModal(order) {
     customer.payment === "COD" ? "ক্যাশ অন ডেলিভারি" : "অগ্রিম পেমেন্ট",
   );
 
+  const advanceBox = document.querySelector("#successAdvancePayment");
+  const advanceDetails = document.querySelector(
+    "#successAdvancePaymentDetails",
+  );
+
+  if (customer.payment === "Advance" && order.advancePayment) {
+    const payment = order.advancePayment;
+
+    if (advanceBox && advanceDetails) {
+      advanceBox.classList.remove("hidden");
+
+      if (payment.method === "Nagad") {
+        advanceDetails.innerHTML = `
+        <p><strong>Payment Method:</strong> Nagad</p>
+        <p><strong>Transaction ID:</strong> ${payment.transactionId || "-"}</p>
+        <p><strong>Sender Number:</strong> ${payment.senderNumber || "-"}</p>
+        <p><strong>Advance Amount:</strong> ${money(payment.amount)}</p>
+      `;
+      } else if (payment.method === "Bank") {
+        advanceDetails.innerHTML = `
+        <p><strong>Payment Method:</strong> Bank</p>
+        <p><strong>Sender Bank:</strong> ${payment.senderBankName || "-"}</p>
+        <p><strong>Sender Account:</strong> ${payment.senderBankAccount || "-"}</p>
+        <p><strong>Advance Amount:</strong> ${money(payment.amount)}</p>
+      `;
+      } else {
+        advanceDetails.textContent = "Payment information not available.";
+      }
+    }
+  } else {
+    advanceBox?.classList.add("hidden");
+
+    if (advanceDetails) {
+      advanceDetails.innerHTML = "";
+    }
+  }
+
   // Products
 
   // Products - Success Modal
@@ -433,25 +491,52 @@ export function showSuccessModal(order) {
 
   setText("successTotal", money(order.total));
 
+  setText("successAdvanceAmount", money(order.advanceAmount || 0));
+  setText("successDueAmount", money(order.dueAmount ?? order.total));
+
   // PDF Invoice
   const pdfOrderInfo = document.querySelector("#pdfOrderInfo");
-
   const pdfCustomerInfo = document.querySelector("#pdfCustomerInfo");
-
   const pdfProducts = document.querySelector("#pdfProducts");
-
   const pdfTotal = document.querySelector("#pdfTotal");
 
-  if (pdfOrderInfo) {
-    pdfOrderInfo.innerHTML = `
-      <strong>অর্ডার নম্বর:</strong> ${order.orderId}<br>
-      <strong>অর্ডারের তারিখ:</strong> ${formatDate(orderDate)}<br>
-      <strong>অর্ডার স্ট্যাটাস:</strong> অপেক্ষমাণ
-    `;
+  if (pdfCustomerInfo) {
+    const payment = order.advancePayment;
+    let advanceInfo = "";
+
+    if (customer.payment === "Advance" && payment) {
+      if (payment.method === "Nagad") {
+        advanceInfo = `
+        <br><strong>Advance Method:</strong> Nagad
+        <br><strong>Transaction ID:</strong> ${payment.transactionId || "-"}
+        <br><strong>Sender Number:</strong> ${payment.senderNumber || "-"}
+        <br><strong>Advance Amount:</strong> ${money(payment.amount)}
+      `;
+      } else if (payment.method === "Bank") {
+        advanceInfo = `
+        <br><strong>Advance Method:</strong> Bank
+        <br><strong>Sender Bank:</strong> ${payment.senderBankName || "-"}
+        <br><strong>Sender Account:</strong> ${payment.senderBankAccount || "-"}
+        <br><strong>Advance Amount:</strong> ${money(payment.amount)}
+      `;
+      }
+    }
+
+    pdfCustomerInfo.innerHTML = `
+    <strong>নাম:</strong> ${customer.name || "-"}<br>
+    <strong>মোবাইল:</strong> ${customer.phone || "-"}<br>
+    <strong>জেলা:</strong> ${customer.district || "-"}<br>
+    <strong>উপজেলা / থানা:</strong> ${customer.upazila || "-"}<br>
+    <strong>ঠিকানা:</strong> ${customer.address || "-"}<br>
+    <strong>পেমেন্ট:</strong> ${
+      customer.payment === "COD" ? "ক্যাশ অন ডেলিভারি" : "অগ্রিম পেমেন্ট"
+    }
+    ${advanceInfo}
+  `;
   }
 
-  // data concol e dekhar comand
-  console.log(order);
+  // Order data console
+  console.log("SUCCESS ORDER DATA:", order);
 
   if (pdfCustomerInfo) {
     pdfCustomerInfo.innerHTML = `
@@ -494,12 +579,22 @@ export function showSuccessModal(order) {
 
   if (pdfTotal) {
     pdfTotal.innerHTML = `
-      <p>পণ্যের মোট মূল্য: ${money(order.subtotal)}</p>
-      <p>ডেলিভারি চার্জ: ${money(order.delivery)}</p>
-      <h2 style="font-size:24px;font-weight:bold;color:#172554;">
-        সর্বমোট: ${money(order.total)}
-      </h2>
-    `;
+    <p>পণ্যের মোট মূল্য: ${money(order.subtotal)}</p>
+
+    <p>ডেলিভারি চার্জ: ${money(order.delivery)}</p>
+
+    <h2 style="font-size:20px;font-weight:bold;color:#172554;">
+      সর্বমোট: ${money(order.total)}
+    </h2>
+
+    <p style="color:#15803d;font-weight:bold;">
+      অগ্রিম পরিশোধ: ${money(order.advanceAmount || 0)}
+    </p>
+
+    <h3 style="font-size:16px;font-weight:bold;color:#dc2626;">
+      বকেয়া টাকা: ${money(order.dueAmount ?? order.total)}
+    </h3>
+  `;
   }
 
   // Store Current Order for PDF

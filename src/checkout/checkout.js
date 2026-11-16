@@ -4,6 +4,7 @@ import { renderCart } from "../components/cart.js";
 
 let divisionData = [];
 let checkoutInitialized = false;
+let advancePayment = null;
 
 // =================================
 // CHECKOUT MODAL HTML
@@ -98,11 +99,78 @@ export async function renderCheckoutModal() {
             </div>
 
             <div>
-              <label class="mb-2 block text-sm font-medium">পেমেন্ট পদ্ধতি *</label>
+              <label class="mb-2 block text-sm font-medium">
+                পেমেন্ট পদ্ধতি *
+              </label>
+
               <select name="payment" required class="checkout-input">
                 <option value="COD">ক্যাশ অন ডেলিভারি</option>
                 <option value="Advance">অগ্রিম পেমেন্ট</option>
               </select>
+
+              <!-- Advance Payment Methods -->
+              <div id="advanceMethods" class="mt-4 hidden">
+                <p class="mb-3 text-sm font-semibold text-slate-700">
+                  অগ্রিম পেমেন্টের মাধ্যম নির্বাচন করুন
+                </p>
+
+                <div class="grid grid-cols-2 gap-3">
+
+                  <!-- Nagad -->
+                  <button
+                    type="button"
+                    data-payment-method="Nagad"
+                    class="payment-method-btn rounded-xl border-2 border-slate-200 p-3 font-bold text-orange-600 transition hover:border-orange-500"
+                  >
+                    Nagad
+                  </button>
+
+                  <!-- Bank -->
+                  <!--
+                      Bank Payment - Temporarily Disabled
+
+                      <button
+                        type="button"
+                        data-payment-method="Bank"
+                        class="payment-method-btn rounded-xl border-2 border-slate-200 p-3 font-bold text-blue-900 transition hover:border-blue-700"
+                      >
+                        Bank
+                      </button>
+
+                      -->
+
+                  <!--
+                  bKash - আপাতত বন্ধ রাখা হয়েছে।
+                  চালু করতে চাইলে এই button-এর comment তুলে দেবে।
+
+                  <button
+                    type="button"
+                    data-payment-method="bKash"
+                    class="payment-method-btn rounded-xl border-2 border-slate-200 p-3 font-bold text-pink-600"
+                  >
+                    bKash
+                  </button>
+                  -->
+
+                  <!--
+                  Rocket - আপাতত বন্ধ রাখা হয়েছে।
+                  চালু করতে চাইলে এই button-এর comment তুলে দেবে।
+
+                  <button
+                    type="button"
+                    data-payment-method="Rocket"
+                    class="payment-method-btn rounded-xl border-2 border-slate-200 p-3 font-bold text-purple-600"
+                  >
+                    Rocket
+                  </button>
+                  -->
+
+                </div>
+
+                <p id="advancePaymentStatus" class="mt-3 text-sm text-slate-500">
+                  এখনো কোনো পেমেন্ট মাধ্যম নির্বাচন করা হয়নি।
+                </p>
+              </div>
             </div>
           </div>
 
@@ -144,6 +212,203 @@ export async function renderCheckoutModal() {
           </div>
 
         </form>
+      </div>
+    </div>
+
+    <!-- Advance Payment Modal -->
+    <div
+      id="advancePaymentModal"
+      class="fixed inset-0 z-[130] hidden items-center justify-center overflow-y-auto bg-black/60 p-4"
+    >
+      <div class="my-auto w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+
+        <div class="mb-5 flex items-center justify-between border-b pb-4">
+          <div>
+            <h2 class="text-xl font-bold text-blue-950">
+              Advance Payment
+            </h2>
+            <p class="mt-1 text-sm text-slate-500">
+              পেমেন্টের তথ্য প্রদান করুন
+            </p>
+          </div>
+
+          <button
+            type="button"
+            id="closeAdvancePayment"
+            class="text-3xl text-slate-500 hover:text-red-500"
+          >
+            &times;
+          </button>
+        </div>
+
+        <!-- Nagad Account Information -->
+        <div id="nagadPaymentInfo" class="hidden">
+
+          <div class="rounded-xl border border-orange-200 bg-orange-50 p-4">
+            <p class="text-sm font-medium text-slate-600">
+              আমাদের Nagad Account Number
+            </p>
+
+            <div class="mt-2 flex items-center justify-between gap-2">
+              <h3 class="text-2xl font-bold text-orange-600">
+                01901379237
+              </h3>
+
+              <button
+                type="button"
+                id="copyNagadNumber"
+                class="rounded-lg bg-orange-500 px-3 py-2 text-sm font-semibold text-white"
+              >
+                Copy
+              </button>
+            </div>
+
+            <p class="mt-3 text-sm text-slate-600">
+              উপরের নম্বরে পেমেন্ট সম্পন্ন করে নিচের তথ্যগুলো পূরণ করুন।
+            </p>
+          </div>
+
+          <div class="mt-5 space-y-4">
+
+            <div>
+              <label class="mb-2 block text-sm font-medium">
+                Transaction ID *
+              </label>
+
+              <input
+                id="nagadTransactionId"
+                type="text"
+                minlength="8"
+                maxlength="8"
+                pattern="[A-Za-z0-9]{8}"
+                autocomplete="off"
+                placeholder="8 Character Transaction ID"
+                class="checkout-input"
+              />
+              <p class="mt-1 text-xs text-slate-500">
+                Transaction ID অবশ্যই ৮ Character হতে হবে।
+              </p>
+            </div>
+
+            <div>
+              <label class="mb-2 block text-sm font-medium">
+                যে নম্বর থেকে পেমেন্ট করেছেন *
+              </label>
+
+              <input
+                id="nagadSenderNumber"
+                type="tel"
+                inputmode="numeric"
+                minlength="11"
+                maxlength="11"
+                pattern="01[3-9][0-9]{8}"
+                placeholder="01XXXXXXXXX"
+                autocomplete="tel"
+                class="checkout-input"
+              />
+              <p class="mt-1 text-xs text-slate-500">
+                বাংলাদেশের বৈধ ১১ ডিজিটের মোবাইল নম্বর দিন।
+              </p>
+            </div>
+
+            <div>
+              <label class="mb-2 block text-sm font-medium">
+                Advance Amount (৳) *
+              </label>
+
+              <input
+                id="nagadAmount"
+                type="number"
+                min="1"
+                step="1"
+                placeholder="অগ্রিম টাকার পরিমাণ"
+                class="checkout-input"
+              />
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Bank Account Information -->
+        <div id="bankPaymentInfo" class="hidden">
+
+          <div class="rounded-xl border border-blue-200 bg-blue-50 p-4">
+            <p class="text-sm text-slate-600">
+              Bank Name
+            </p>
+
+            <h3 class="mt-1 text-lg font-bold text-blue-950">
+              Islami Bank Bangladesh PLC
+            </h3>
+
+            <p class="mt-3 text-sm text-slate-600">
+              Account Number
+            </p>
+
+            <h3 class="mt-1 text-xl font-bold text-blue-950">
+              <!-- এখানে পরে Bank Account Number বসাবে -->
+              [Account Number Pending]
+            </h3>
+
+            <p class="mt-3 text-sm text-slate-600">
+              উপরের ব্যাংক অ্যাকাউন্টে টাকা জমা/ট্রান্সফার করে নিচের তথ্যগুলো পূরণ করুন।
+            </p>
+          </div>
+
+          <div class="mt-5 space-y-4">
+
+            <div>
+              <label class="mb-2 block text-sm font-medium">
+                আপনার Bank Name *
+              </label>
+
+              <input
+                id="senderBankName"
+                type="text"
+                placeholder="আপনার ব্যাংকের নাম"
+                class="checkout-input"
+              />
+            </div>
+
+            <div>
+              <label class="mb-2 block text-sm font-medium">
+                আপনার Bank Account Number *
+              </label>
+
+              <input
+                id="senderBankAccount"
+                type="text"
+                placeholder="আপনার ব্যাংক অ্যাকাউন্ট নম্বর"
+                class="checkout-input"
+              />
+            </div>
+
+            <div>
+              <label class="mb-2 block text-sm font-medium">
+                Advance Amount (৳) *
+              </label>
+
+              <input
+                id="bankAmount"
+                type="number"
+                min="1"
+                step="1"
+                placeholder="অগ্রিম টাকার পরিমাণ"
+                class="checkout-input"
+              />
+            </div>
+
+          </div>
+        </div>
+
+        <button
+          type="button"
+          id="confirmAdvancePayment"
+          class="mt-6 w-full rounded-xl bg-orange-500 py-3 font-bold text-white transition hover:bg-orange-600"
+        >
+          পেমেন্টের তথ্য নিশ্চিত করুন
+        </button>
+
       </div>
     </div>
   `;
@@ -190,6 +455,30 @@ function getDeliveryCharge(district) {
   if (!district) return 0;
 
   return district.trim() === "ঢাকা সিটি" ? 80 : 120;
+}
+
+// =================================
+// BANGLADESH MOBILE OPERATOR CHECK
+// =================================
+
+function getBangladeshOperator(phone) {
+  const prefix = phone.substring(0, 3);
+
+  const operators = {
+    "013": "Grameenphone",
+    "014": "Banglalink",
+    "015": "Teletalk",
+    "016": "Airtel",
+    "017": "Grameenphone",
+    "018": "Robi",
+    "019": "Banglalink",
+  };
+
+  if (!/^01[3-9]\d{8}$/.test(phone)) {
+    return null;
+  }
+
+  return operators[prefix] || null;
 }
 
 // =================================
@@ -303,6 +592,174 @@ export function setupCheckout(SERVER_URL) {
   const submitButton = form.querySelector('[type="submit"]');
 
   checkoutInitialized = true;
+  // =================================
+  // ADVANCE PAYMENT SYSTEM
+  // =================================
+
+  const paymentSelect = form.querySelector('[name="payment"]');
+
+  const advanceMethods = document.querySelector("#advanceMethods");
+  const advancePaymentModal = document.querySelector("#advancePaymentModal");
+
+  const nagadPaymentInfo = document.querySelector("#nagadPaymentInfo");
+  const bankPaymentInfo = document.querySelector("#bankPaymentInfo");
+
+  const advancePaymentStatus = document.querySelector("#advancePaymentStatus");
+
+  let selectedPaymentMethod = "";
+
+  // Show / Hide Advance Methods
+  paymentSelect.addEventListener("change", () => {
+    const isAdvance = paymentSelect.value === "Advance";
+
+    advanceMethods.classList.toggle("hidden", !isAdvance);
+
+    if (!isAdvance) {
+      advancePayment = null;
+      selectedPaymentMethod = "";
+
+      advancePaymentStatus.textContent =
+        "এখনো কোনো পেমেন্ট মাধ্যম নির্বাচন করা হয়নি।";
+    }
+  });
+
+  // Open Payment Modal
+  document.querySelectorAll("[data-payment-method]").forEach((button) => {
+    button.addEventListener("click", () => {
+      selectedPaymentMethod = button.dataset.paymentMethod;
+
+      nagadPaymentInfo.classList.toggle(
+        "hidden",
+        selectedPaymentMethod !== "Nagad",
+      );
+
+      bankPaymentInfo.classList.toggle(
+        "hidden",
+        selectedPaymentMethod !== "Bank",
+      );
+
+      advancePaymentModal.classList.remove("hidden");
+      advancePaymentModal.classList.add("flex");
+    });
+  });
+
+  // Close Payment Modal
+  function closeAdvancePaymentModal() {
+    advancePaymentModal.classList.add("hidden");
+    advancePaymentModal.classList.remove("flex");
+  }
+
+  document
+    .querySelector("#closeAdvancePayment")
+    ?.addEventListener("click", closeAdvancePaymentModal);
+
+  // Copy Nagad Number
+  document.querySelector("#copyNagadNumber")?.addEventListener("click", () => {
+    navigator.clipboard.writeText("01901379237");
+    alert("Nagad নম্বর কপি হয়েছে!");
+  });
+
+  // Confirm Payment Details
+  document
+    .querySelector("#confirmAdvancePayment")
+    ?.addEventListener("click", () => {
+      let paymentDetails = {};
+
+      if (selectedPaymentMethod === "Nagad") {
+        const transactionId = document
+          .querySelector("#nagadTransactionId")
+          .value.trim();
+
+        const senderNumber = document
+          .querySelector("#nagadSenderNumber")
+          .value.trim();
+
+        const amount = Number(document.querySelector("#nagadAmount").value);
+
+        // Validate Transaction ID
+        if (!/^[A-Za-z0-9]{8}$/.test(transactionId)) {
+          alert("Nagad Transaction ID অবশ্যই ৮ Character হতে হবে।");
+          return;
+        }
+
+        // Validate Mobile Number
+        const operator = getBangladeshOperator(senderNumber);
+
+        if (!operator) {
+          alert(
+            "সঠিক বাংলাদেশি মোবাইল নম্বর দিন।\n\n" +
+              "উদাহরণ: 013XXXXXXXX, 017XXXXXXXX",
+          );
+          return;
+        }
+
+        // Validate Advance Amount
+        const cart = getCart();
+
+        const subtotal = cart.reduce(
+          (sum, item) => sum + Number(item.price) * Number(item.quantity),
+          0,
+        );
+
+        const district = document.querySelector(
+          '#checkoutForm [name="district"]',
+        ).value;
+
+        const total = subtotal + getDeliveryCharge(district);
+
+        if (!Number.isInteger(amount) || amount <= 0 || amount > total) {
+          alert(`Advance Amount অবশ্যই ১ থেকে ৳${total} এর মধ্যে হতে হবে।`);
+          return;
+        }
+
+        paymentDetails = {
+          method: "Nagad",
+          transactionId: transactionId.toUpperCase(),
+          senderNumber,
+          senderOperator: operator,
+          amount,
+        };
+      } else if (selectedPaymentMethod === "Bank") {
+        const senderBankName = document
+          .querySelector("#senderBankName")
+          .value.trim();
+
+        const senderBankAccount = document
+          .querySelector("#senderBankAccount")
+          .value.trim();
+
+        const amount = Number(document.querySelector("#bankAmount").value);
+
+        if (
+          !senderBankName ||
+          !senderBankAccount ||
+          !Number.isInteger(amount) ||
+          amount <= 0
+        ) {
+          alert("Bank Name, Account Number ও Advance Amount পূরণ করুন।");
+          return;
+        }
+
+        paymentDetails = {
+          method: "Bank",
+          senderBankName,
+          senderBankAccount,
+          amount,
+        };
+      } else {
+        alert("সঠিক পেমেন্ট মাধ্যম নির্বাচন করুন।");
+        return;
+      }
+
+      advancePayment = paymentDetails;
+
+      advancePaymentStatus.textContent =
+        paymentDetails.method === "Nagad"
+          ? `Nagad (${paymentDetails.senderOperator}) — ${paymentDetails.senderNumber} — ৳${paymentDetails.amount}`
+          : `${paymentDetails.method} নির্বাচন করা হয়েছে — ৳${paymentDetails.amount}`;
+
+      closeAdvancePaymentModal();
+    });
 
   // Checkout button
   document.addEventListener("click", (event) => {
@@ -480,10 +937,6 @@ export function setupCheckout(SERVER_URL) {
   // ORDER SUBMIT
   // =================================
 
-  // =================================
-  // ORDER SUBMIT
-  // =================================
-
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -495,6 +948,11 @@ export function setupCheckout(SERVER_URL) {
     }
 
     if (!form.reportValidity()) return;
+
+    if (formDataPaymentIsAdvance() && !advancePayment) {
+      alert("অগ্রিম পেমেন্টের মাধ্যম নির্বাচন করে তথ্য পূরণ করুন।");
+      return;
+    }
 
     if (!SERVER_URL) {
       alert("Backend API URL পাওয়া যায়নি। .env ফাইল চেক করুন।");
@@ -519,6 +977,9 @@ export function setupCheckout(SERVER_URL) {
         address: formData.get("address"),
         payment: formData.get("payment"),
       };
+
+      const paymentDetails =
+        customer.payment === "Advance" ? advancePayment : null;
 
       // Generate Order ID
       const orderId = `MCA-${Date.now()}`;
@@ -551,6 +1012,8 @@ export function setupCheckout(SERVER_URL) {
         subtotal,
         delivery,
         total,
+
+        advancePayment: paymentDetails,
       };
 
       console.log("Sending Order Data:", orderData);
@@ -588,12 +1051,23 @@ export function setupCheckout(SERVER_URL) {
       // Complete Order Object
       const order = {
         ...result,
-        orderId,
+        orderId: result.orderId || orderId,
         customer,
         products,
         subtotal,
         delivery,
         total,
+
+        advancePayment: paymentDetails,
+
+        advanceAmount: result.advanceAmount ?? (paymentDetails?.amount || 0),
+
+        dueAmount:
+          result.dueAmount ??
+          (customer.payment === "Advance"
+            ? total - Number(paymentDetails?.amount || 0)
+            : total),
+
         status: "Pending",
         createdAt: new Date().toISOString(),
       };
@@ -607,6 +1081,25 @@ export function setupCheckout(SERVER_URL) {
 
       // Reset Form
       form.reset();
+
+      advancePayment = null;
+
+      selectedPaymentMethod = "";
+
+      advanceMethods.classList.add("hidden");
+
+      advancePaymentStatus.textContent =
+        "এখনো কোনো পেমেন্ট মাধ্যম নির্বাচন করা হয়নি।";
+
+      document.querySelector("#nagadTransactionId").value = "";
+      document.querySelector("#nagadSenderNumber").value = "";
+      document.querySelector("#nagadAmount").value = "";
+
+      document.querySelector("#senderBankName").value = "";
+      document.querySelector("#senderBankAccount").value = "";
+      document.querySelector("#bankAmount").value = "";
+
+      closeAdvancePaymentModal();
 
       districtSelect.innerHTML = `
         <option value="">প্রথমে বিভাগ নির্বাচন করুন</option>
@@ -645,4 +1138,11 @@ export function setupCheckout(SERVER_URL) {
   updateCheckoutSummary();
 
   console.log("Checkout Initialized Successfully!");
+}
+
+function formDataPaymentIsAdvance() {
+  return (
+    document.querySelector('#checkoutForm [name="payment"]')?.value ===
+    "Advance"
+  );
 }
