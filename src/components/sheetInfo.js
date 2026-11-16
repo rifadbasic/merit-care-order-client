@@ -1,4 +1,3 @@
-
 export function renderSheetInfo() {
   return `
     <!-- Merit Care Sheet Information -->
@@ -257,6 +256,11 @@ export function renderSheetInfo() {
                     উচ্চতর গণিত
                   </li>
 
+                  <li class="flex gap-2">
+                    <span class="text-green-500">✓</span>
+                    বাংলাদেশ ও বিশ্বপরিচয়
+                  </li>
+
                 </ul>
 
                 <div class="mt-6 rounded-xl bg-blue-50 p-4">
@@ -308,6 +312,10 @@ export function renderSheetInfo() {
                     ব্যবসায় উদ্যোগ
                   </li>
 
+                  <li class="flex gap-2">
+                    <span class="text-green-500">✓</span>
+                    সাধারণ বিজ্ঞান
+                  </li>
                 </ul>
 
                 <div class="mt-6 rounded-xl bg-orange-50 p-4">
@@ -362,6 +370,10 @@ export function renderSheetInfo() {
                   <li class="flex gap-2">
                     <span class="text-green-500">✓</span>
                     অর্থনীতি
+                  </li>
+                  <li class="flex gap-2">
+                    <span class="text-green-500">✓</span>
+                    সাধারণ বিজ্ঞান
                   </li>
 
                 </ul>

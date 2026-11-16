@@ -189,9 +189,7 @@ async function loadLocationData() {
 function getDeliveryCharge(district) {
   if (!district) return 0;
 
-  // ঢাকা সিটি = ৮০ টাকা
-  // অন্যান্য জেলা / এলাকা = ১২০ টাকা
-  return district === "ঢাকা" ? 80 : 120;
+  return district.trim() === "ঢাকা সিটি" ? 80 : 120;
 }
 
 // =================================

@@ -91,36 +91,21 @@ export function renderLayout() {
         
         
 
-<!-- Merit Care MP4 Video -->
-<div class="mt-10 overflow-hidden rounded-2xl bg-black shadow-2xl">
-  <video
-    id="meritVideo"
-    class="aspect-video w-full"
-    autoplay
-    loop
-    playsinline
-    controls
-    preload="auto"
-    volume="1"
-  >
-    <source
-      src="https://res.cloudinary.com/nqebmywi/video/upload/v1794643970/_%E0%A6%9C%E0%A6%BF%E0%A6%AA%E0%A6%BF%E0%A6%8F_%E0%A7%AB_%E0%A6%AA%E0%A6%BE%E0%A6%93%E0%A6%AF%E0%A6%BC%E0%A6%BE%E0%A6%B0_%E0%A6%B8%E0%A6%B9%E0%A6%9C_%E0%A6%89%E0%A6%AA%E0%A6%BE%E0%A6%AF%E0%A6%BC_%E0%A6%AE%E0%A7%87%E0%A6%B0%E0%A6%BF%E0%A6%9F_%E0%A6%95%E0%A7%87%E0%A6%AF%E0%A6%BC%E0%A6%BE%E0%A6%B0_%E0%A6%B6%E0%A6%BF%E0%A6%9F____1080P_HD.mp4"
-      type="video/mp4"
-    />
-    তোমার ব্রাউজার ভিডিও চালাতে পারছে না।
-  </video>
-</div>
 
-<script>
-  const meritVideo = document.getElementById("meritVideo");
+       <video
+        id="meritVideo"
+        class="aspect-video w-full"
+        autoplay
+        muted
+        loop
+        playsinline
+        controls
+        preload="auto"
+      >
+        <source id="meritVideoSource" type="video/mp4" />
+        তোমার ব্রাউজার ভিডিও চালাতে পারছে না।
+      </video>
 
-  meritVideo.volume = 1;
-  meritVideo.muted = false;
-
-  meritVideo.play().catch(() => {
-    console.log("Browser autoplay with sound blocked.");
-  });
-</script>
 
 
 
